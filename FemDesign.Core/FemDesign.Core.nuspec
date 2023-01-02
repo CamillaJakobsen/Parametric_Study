@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- NOTE: Updating this file will trigger a new release -->
+<package>
+  <metadata>
+    <id>$id$</id>
+    <!-- Version should be the same as in FemDesign.Core/Properties/GlobalAssemblyInfo.cs -->
+    <version>$version$</version>
+    <title>$title$</title>
+    <authors>StruSoft</authors>
+    <description>The FEM-Design API package</description>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <license type="expression">MIT</license>
+    <projectUrl>https://github.com/strusoft/femdesign-api</projectUrl>
+    <icon>Resources\icons\FemDesignAPI.png</icon>
+    <!-- <releaseNotes>Summary of changes made in this release of the package.</releaseNotes> -->
+    <copyright>$copyright$</copyright>
+    <tags>StruSoft FemDesign 21 3D Structure Api StruXML</tags>
+  </metadata>
+  <files>
+    <file src="Resources\icons\FemDesignAPI.png" target="Resources\icons\" />
+  </files>
+</package>
