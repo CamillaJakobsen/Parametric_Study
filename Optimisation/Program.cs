@@ -9,6 +9,8 @@ using System.Globalization;
 //using FemDesignProgram.Helpers;
 using Optimisation;
 using System.ComponentModel;
+using FemDesign.Materials;
+using FemDesign.Results;
 
 namespace FemDesign.Examples
 {
@@ -17,27 +19,29 @@ namespace FemDesign.Examples
 
         public static void Main(string[] args)
         {
-            string path = @"C:\Users\camil\OneDrive\OneDrive_Privat\OneDrive\Bygningsdesign kandidat\Speciale\femdesign-api\Optimisation\sample_optimisation_slab.struxml";
+            //string path = @"C:\Users\camil\OneDrive\OneDrive_Privat\OneDrive\Bygningsdesign kandidat\Speciale\femdesign-api\Optimisation\sample_optimisation_slab.struxml";
+            string path = @"C:\Users\camil\OneDrive\OneDrive_Privat\OneDrive\Bygningsdesign kandidat\Speciale\femdesign-api\Optimisation\sample_optimisation_slab_custom.struxml";
+
             string bscPathQEconcrete = @"C:\Users\camil\OneDrive\OneDrive_Privat\OneDrive\Bygningsdesign kandidat\Speciale\femdesign-api\Optimisation\QEconcrete.bsc";
             string bscPathQEreinforcement = @"C:\Users\camil\OneDrive\OneDrive_Privat\OneDrive\Bygningsdesign kandidat\Speciale\femdesign-api\Optimisation\QEreinforcement.bsc";
             string outFolder = @"C:\Users\camil\OneDrive\OneDrive_Privat\OneDrive\Bygningsdesign kandidat\Speciale\femdesign-api\Optimisation\Outputs";
             string tempPath = outFolder + "temp.struxml";
             List<string> bscPaths = new List<string>();
-            bscPaths.Add(bscPathQEconcrete);
-            bscPaths.Add(bscPathQEreinforcement);
-            //string bscPath = @"C:\Users\camil\OneDrive\OneDrive_Privat\OneDrive\Bygningsdesign kandidat\Speciale\femdesign-api\quantities_test.bsc";
+            //bscPaths.Add(bscPathQEconcrete);
+            //bscPaths.Add(bscPathQEreinforcement);
+            string bscPath = @"C:\Users\camil\OneDrive\OneDrive_Privat\OneDrive\Bygningsdesign kandidat\Speciale\femdesign-api\quantities_test.bsc";
 
             Model model = Model.DeserializeFromFilePath(path);
 
-            //var resultTypes = new List<Type>
-            //{
-            //    typeof(Results.QuantityEstimationConcrete),
-            //    typeof(Results.QuantityEstimationReinforcement),
-
-            //};
+            var resultTypes = new List<Type>
+            {
+                typeof(Results.QuantityEstimationConcrete),
+                typeof(Results.QuantityEstimationReinforcement),
+                typeof(Results.RCShellUtilization),
+            };
 
             // Creating the bsc paths in C:\femdesign-api\quantities_test\scripts
-            //var bscPathsFromResultTypes = Calculate.Bsc.BscPathFromResultTypes(resultTypes, bscPath);
+            List<string> bscPathsFromResultTypes = Calculate.Bsc.BscPathFromResultTypes(resultTypes, bscPath);
 
 
             // CO2 udledning pr m3 beton med en massefylde på 2246 kg/m3
@@ -45,20 +49,21 @@ namespace FemDesign.Examples
             concreteStrength.Add("C20/25", 227.07);
             concreteStrength.Add("C25/30", 252.7);
             concreteStrength.Add("C30/37", 293.69);
-            concreteStrength.Add("C35/45", 311.37);
-            concreteStrength.Add("C40/50", 436.14);
-            
+            concreteStrength.Add("C35/45", 311.47);
+            concreteStrength.Add("C40/50", 440.77);
+
             //CO2 udledning pr kg armeringsstål
             double reinforcementCarbon = 0.6841;
-            
+
             //double reinforcementCarbon = 70;
             double concreteVolume = 0;
             double reinforcementWeight = 0;
-
+            double utilisation = 0;
+            string utilisationSC = "";
 
 
             //Read slab (hard coded in this example, probably better to look for a slab with a certain name, eg. P.1)
-            Shells.Slab slab = model.Entities.Slabs[0];
+            //Shells.Slab slab = model.Entities.Slabs[0];
 
 
             //Sets up what type of analysis should be done
@@ -88,13 +93,15 @@ namespace FemDesign.Examples
 
 
             //Loop variables
-            double low = 0.2;
-            double high = 0.7;
+            double low = 0.17;
+            double high = 0.31;
 
             //Second Loop
 
             List<string> concreteStrengts = new List<string> { "C20/25", "C25/30", "C30/37", "C35/45", "C40/50" };
-
+            List<double> concreteVolumeList = new List<double>();
+            List<double> reinforcementWeightList = new List<double>();
+            List<double> utilisationList = new List<double>();
 
             List<double> GWP = new List<double>();
 
@@ -104,60 +111,84 @@ namespace FemDesign.Examples
                 //var material = materialsDB.MaterialByName("C35/45");
                 var materialInput = entry.Key;
                 var materialsDatabase = Materials.MaterialDatabase.DeserializeStruxml("materials.struxml");
+                //Materials.Material newMaterial = materialsDatabase.MaterialByName(materialInput);
                 Materials.Material newMaterial = materialsDatabase.MaterialByName(materialInput);
-                //Materials.Material newMaterial = materialsDatabase.MaterialByName("C25/30");
 
 
                 //model.Materials.Material[0] = newMaterial;
 
-                slab.Material = newMaterial;
 
-                for (double i = low; i < high; i = i + 0.05)
+
+                for (double i = low; i < high; i = i + 0.01)
                 {
-                //Set thickness of slab
-                double thickness = i;
-                slab.SlabPart.Thickness[0].Value = Math.Round(thickness, 3);
-                
+                    //Set thickness of slab
+                    double thickness = i;
 
-                //Save temporary model
-                model.SerializeModel(tempPath);
+                    //slab.Material = newMaterial;
+
+                    model.Materials.Material[0].Concrete = newMaterial.Concrete;
+                    Materials.Material materialSlab = model.Entities.Slabs[0].Material;
+                    //materialSlab = newMaterial;
+                    Shells.Slab slab = model.Entities.Slabs[0];
+                    slab.SlabPart.Thickness[0].Value = Math.Round(thickness, 3);
+                    //Save temporary model
+                    //model.SerializeModel(tempPath);
+                    string outPathIndividual = outFolder + "sample_slab_out" + ".struxml";
+                    model.SerializeModel(outPathIndividual);
+
+                    //Run analysis and get results
+
+                    //RunAnalysis(tempPath, bscPath);
+                    //var analysisSettings = Calculate.Analysis.StaticAnalysis();
+
+                    // creates csv files
+                    //var fdScript = Calculate.FdScript.Analysis(tempPath, analysisSettings, bscPathsFromResultTypes, null, true);
+
+                    //var app = new FemDesign.Calculate.Application();
+                    // creates the csv files at the location: C:\femdesign-api\Quantities\FEM-design_quantities\results
+                    //app.RunFdScript(fdScript, false, true);
+                    //model.SerializeModel(path);
+
+                    Calculate.Analysis analysis = new Calculate.Analysis(null, null, null, null, true, false, false, false, false, false, false, false, true, false, false, false, false);
+                    Calculate.Design design = new Calculate.Design(true, true, true, true);
+                    //Calculate.FdScript fdScript = Calculate.FdScript.Design("rc", tempPath, analysis, design, bscPathsFromResultTypes, "", true);
+                    Calculate.FdScript fdScript = Calculate.FdScript.Design("rc", outPathIndividual, analysis, design, bscPathsFromResultTypes, "", true);
+                    Calculate.Application app = new Calculate.Application();
+                    app.RunFdScript(fdScript, false, true);
 
 
-                //Run analysis and get results
 
-                //RunAnalysis(tempPath, bscPath);
-                //var analysisSettings = Calculate.Analysis.StaticAnalysis();
+                    //RunAnalysis(tempPath, bscPathsFromResultTypes);
+                    concreteVolume = ConcreteVolume();
+                    concreteVolumeList.Add(concreteVolume);
+                    reinforcementWeight = ReinforcementWeight();
+                    reinforcementWeightList.Add(reinforcementWeight);
 
-                // creates csv files
-                //var fdScript = Calculate.FdScript.Analysis(tempPath, analysisSettings, bscPathsFromResultTypes, null, true);
+                    utilisation = Utilisation();
+                    utilisationList.Add(utilisation);
 
-                //var app = new FemDesign.Calculate.Application();
-                // creates the csv files at the location: C:\femdesign-api\Quantities\FEM-design_quantities\results
-                //app.RunFdScript(fdScript, false, true);
-                //model.SerializeModel(path);
+                    utilisationSC = UtilisationSC();
 
-                // Read model and results
-                //model = Model.DeserializeFromFilePath(fdScript.StruxmlPath);
-                RunAnalysis(tempPath, bscPaths);
-                concreteVolume = ConcreteVolume();
-                reinforcementWeight = ReinforcementWeight();
-                double concreteCarbon = entry.Value;
+                    double concreteCarbon = entry.Value;
 
-                //Calculate GWP, write to console app and write to list
-                double totalGWP = concreteCarbon * concreteVolume + reinforcementCarbon * reinforcementWeight;
-                Console.WriteLine(string.Format("{0} {1} {2} {3}", "GWP: ", totalGWP, thickness + "m", materialInput));
-                GWP.Add(totalGWP);
+                    double reinforcementRatio = (reinforcementWeight / 7850) / concreteVolume;
+
+                    //Calculate GWP, write to console app and write to list
+                    double totalGWP = concreteCarbon * concreteVolume + reinforcementCarbon * reinforcementWeight;
+                    Console.WriteLine(string.Format("{0} {1} {2} {3} {4} {5} {6}", "GWP: ", totalGWP, thickness + "m", materialInput, utilisation, utilisationSC, reinforcementRatio));
+                    GWP.Add(totalGWP);
 
                 }
 
-                
+
+                Console.WriteLine("end");
             }
 
         }
-
+    
         public static void RunAnalysis(string modelPath, List<string> bscFilePaths)
         {
-            Calculate.Analysis analysis = new Calculate.Analysis(null, null, null, null, true, false, false, false, false, false, false, false, false, false, false, false, false);
+            Calculate.Analysis analysis = new Calculate.Analysis(null, null, null, null, true, false, false, false, false, false, false, false, true, false, false, false, false);
             Calculate.Design design = new Calculate.Design(true, false);
             Calculate.FdScript fdScript = Calculate.FdScript.Design("rc", modelPath, analysis, design, bscFilePaths, "", true);
             Calculate.Application app = new Calculate.Application();
@@ -170,7 +201,7 @@ namespace FemDesign.Examples
             //Read results from csv file
             double concreteVolume = 0;
             int counter = 0;
-            using (var reader = new StreamReader(@"C:\Users\camil\OneDrive\OneDrive_Privat\OneDrive\Bygningsdesign kandidat\Speciale\femdesign-api\Optimisation\Outputstemp\results\QEconcrete.csv"))
+            using (var reader = new StreamReader(@"C:\Users\camil\OneDrive\OneDrive_Privat\OneDrive\Bygningsdesign kandidat\Speciale\femdesign-api\Optimisation\Outputssample_slab_out\results\QuantityEstimationConcrete.csv"))
             {
 
                 //Console.WriteLine("");
@@ -195,7 +226,7 @@ namespace FemDesign.Examples
             //Read results from csv file
             double reinforcementWeight = 0;
             int counter = 0;
-            using (var reader = new StreamReader(@"C:\Users\camil\OneDrive\OneDrive_Privat\OneDrive\Bygningsdesign kandidat\Speciale\femdesign-api\Optimisation\Outputstemp\results\QEreinforcement.csv"))
+            using (var reader = new StreamReader(@"C:\Users\camil\OneDrive\OneDrive_Privat\OneDrive\Bygningsdesign kandidat\Speciale\femdesign-api\Optimisation\Outputssample_slab_out\results\QuantityEstimationReinforcement.csv"))
             {
                 while (!reader.EndOfStream)
                 {
@@ -204,12 +235,66 @@ namespace FemDesign.Examples
                     if (values[0] == "TOTAL" & line != "")
                     {
                         //Console.WriteLine(string.Format("{0} {1} {2}", values[0], "reinforcement", values[5]));
-                        reinforcementWeight = tTokgConverter.Convert(double.Parse(values[5], CultureInfo.InvariantCulture));
+                        reinforcementWeight = Double.Parse(values[5].Replace('.', '.'), CultureInfo.InvariantCulture);
                     }
                     counter++;
                 }
             }
             return reinforcementWeight;
         }
+
+        public static double Utilisation()
+        {
+            //Read results from csv file
+            double utilisation = 0;
+            int counter = 0;
+            using (var reader = new StreamReader(@"C:\Users\camil\OneDrive\OneDrive_Privat\OneDrive\Bygningsdesign kandidat\Speciale\femdesign-api\Optimisation\Outputssample_slab_out\results\RCDesignShellUtilizationLoadCombination.csv"))
+            {
+
+                //Console.WriteLine("");
+                while (!reader.EndOfStream)
+                {
+                    var line = reader.ReadLine();
+                    var values = line.Split("\t");
+                    if (values[0] == "P.1.1" & line != "")
+                    {
+                        //Console.WriteLine(string.Format("{0} {1} {2}", values[0], "concrete", values[10]));
+                        utilisation = double.Parse(values[1], CultureInfo.InvariantCulture);
+                    }
+                    counter++;
+                }
+            }
+
+            return utilisation;
+
+        }
+
+        public static string UtilisationSC()
+        {
+            //Read results from csv file
+
+            string utilisationSC = "";
+            int counter = 0;
+            using (var reader = new StreamReader(@"C:\Users\camil\OneDrive\OneDrive_Privat\OneDrive\Bygningsdesign kandidat\Speciale\femdesign-api\Optimisation\Outputssample_slab_out\results\RCDesignShellUtilizationLoadCombination.csv"))
+            {
+
+                //Console.WriteLine("");
+                while (!reader.EndOfStream)
+                {
+                    var line = reader.ReadLine();
+                    var values = line.Split("\t");
+                    if (values[0] == "P.1.1" & line != "")
+                    {
+                        //Console.WriteLine(string.Format("{0} {1} {2}", values[0], "concrete", values[10]));
+
+                        utilisationSC = values[7];
+                    }
+                    counter++;
+                }
+            }
+
+            return utilisationSC;
+        }
+        
     }
 }
