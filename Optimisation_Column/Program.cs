@@ -11,10 +11,11 @@ using Optimisation;
 using System.ComponentModel;
 using FemDesign.Materials;
 using FemDesign.Results;
+using System.Reflection;
 
 namespace FemDesign.Examples
 {
-    public class Optimisation_Deck
+    public class Optimisation_Column
     {
 
         public static void Main(string[] args)
@@ -30,7 +31,6 @@ namespace FemDesign.Examples
             //bscPaths.Add(bscPathQEconcrete);
             //bscPaths.Add(bscPathQEreinforcement);
             string bscPath = @"C:\Users\camil\OneDrive\OneDrive_Privat\OneDrive\Bygningsdesign kandidat\Speciale\femdesign-api\quantities_test.bsc";
-
             Model model = Model.DeserializeFromFilePath(path);
 
             var resultTypes = new List<Type>
@@ -68,7 +68,7 @@ namespace FemDesign.Examples
 
             //Sets up what type of analysis should be done
             #region Analysis Setup
-            
+
             // Setup for calculation of load combinations
             bool NLE = true; // Non-linear elastic calculation
             bool PL = false; // Plastic analysis
@@ -99,7 +99,7 @@ namespace FemDesign.Examples
 
             //Second Loop
 
-            
+
             List<double> concreteVolumeList = new List<double>();
             List<double> reinforcementWeightList = new List<double>();
             List<double> utilisationList = new List<double>();
@@ -186,7 +186,7 @@ namespace FemDesign.Examples
             }
 
         }
-    
+
         public static void RunAnalysis(string modelPath, List<string> bscFilePaths)
         {
             Calculate.Analysis analysis = new Calculate.Analysis(null, null, null, null, false, false, false, false, false, false, false, false, true, false, false, false, false);
@@ -195,7 +195,7 @@ namespace FemDesign.Examples
             Calculate.Application app = new Calculate.Application();
             app.RunFdScript(fdScript, false, true, true);
 
-            
+
 
         }
 
@@ -298,6 +298,6 @@ namespace FemDesign.Examples
 
             return utilisationSC;
         }
-        
+
     }
 }

@@ -36,7 +36,7 @@ namespace FemDesign.Calculate
         /// <param name="check"></param>
         /// <param name="loadCombination">True if you want the design to be based on Load Combination. False if you want the design to be based on Load Group</param>
         /// <param name="applyChanges">True will force FemDesign to apply the new cross sections to the model at the end of the design process.</param>
-        public Design(bool autoDesign = false, bool check = true, bool loadCombination = true, bool applyChanges = false)
+        public Design(bool autoDesign = true, bool check = true, bool loadCombination = true, bool applyChanges = true)
         {
             if (loadCombination) this.CMax = "";
             else this.GMax = "";
@@ -47,7 +47,7 @@ namespace FemDesign.Calculate
 
         public static Design Default()
         {
-            return new Design(false, true, true, false);
+            return new Design(true, true, true, true);
         }
     }
 }
