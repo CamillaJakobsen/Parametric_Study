@@ -116,10 +116,6 @@ namespace FemDesign.Examples
                 Materials.Material newMaterial = materialsDatabase.MaterialByName(materialInput);
 
 
-                //model.Materials.Material[0] = newMaterial;
-
-
-
                 for (double i = low; i < high; i = i + 0.01)
                 {
                     //Set thickness of slab
@@ -138,26 +134,6 @@ namespace FemDesign.Examples
                     model.SerializeModel(outPathIndividual);
 
                     //Run analysis and get results
-
-                    //RunAnalysis(tempPath, bscPath);
-                    //var analysisSettings = Calculate.Analysis.StaticAnalysis();
-
-                    // creates csv files
-                    //var fdScript = Calculate.FdScript.Analysis(tempPath, analysisSettings, bscPathsFromResultTypes, null, true);
-
-                    //var app = new FemDesign.Calculate.Application();
-                    // creates the csv files at the location: C:\femdesign-api\Quantities\FEM-design_quantities\results
-                    //app.RunFdScript(fdScript, false, true);
-                    //model.SerializeModel(path);
-
-                    //Calculate.Analysis analysis = new Calculate.Analysis(null, null, null, null, true, false, false, false, false, false, false, false, true, false, false, false, false);
-                    //Calculate.Design design = new Calculate.Design(true, true, true, true);
-                    ////Calculate.FdScript fdScript = Calculate.FdScript.Design("rc", tempPath, analysis, design, bscPathsFromResultTypes, "", true);
-                    //Calculate.FdScript fdScript = Calculate.FdScript.Design("rc", outPathIndividual, analysis, design, bscPathsFromResultTypes, "", true);
-                    //Calculate.Application app = new Calculate.Application();
-                    //app.RunFdScript(fdScript, false, true);
-
-
 
                     RunAnalysis(outPathIndividual, bscPathsFromResultTypes);
                     concreteVolume = ConcreteVolume();
@@ -190,7 +166,7 @@ namespace FemDesign.Examples
         public static void RunAnalysis(string modelPath, List<string> bscFilePaths)
         {
             Calculate.Analysis analysis = new Calculate.Analysis(null, null, null, null, false, false, false, false, false, false, false, false, true, false, false, false, false);
-            Calculate.Design design = new Calculate.Design(true, true, true, true);
+            Calculate.Design design = new Calculate.Design(autoDesign: true, check: true, applyChanges: true);
             Calculate.FdScript fdScript = Calculate.FdScript.Design("rc", modelPath, analysis, design, bscFilePaths, "", true);
             Calculate.Application app = new Calculate.Application();
             app.RunFdScript(fdScript, false, true, true);

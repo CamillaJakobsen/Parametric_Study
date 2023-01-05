@@ -11,4 +11,13 @@
     <PackageReference Include="FemDesign.Core" Version="21.7.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="materials.struxml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="sections.struxml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>
