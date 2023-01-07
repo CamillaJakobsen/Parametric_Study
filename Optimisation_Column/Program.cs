@@ -186,7 +186,7 @@ namespace FemDesign.Examples
                     string outPathIndividual3 = outFolder + "sample_slab_out" + ".struxml";
                     modelTimber.SerializeModel(outPathIndividual3);
 
-                    Calculate.Analysis analysis = new Calculate.Analysis(null, null, null, null, false, false, false, false, false, false, false, false, true, false, false, false, false);
+                    Calculate.Analysis analysis = new Calculate.Analysis(null, null, null, null, false, false, false, true, false, false, false, false, true, false, false, false, false);
                     Calculate.Design design = new Calculate.Design(autoDesign: true, check: true, applyChanges: true);
                     Calculate.FdScript fdScript = Calculate.FdScript.Design("timber", outPathIndividual3, analysis, design, bscPaths, "", true);
                     Calculate.Application app = new Calculate.Application();
@@ -204,7 +204,7 @@ namespace FemDesign.Examples
                     string outPathIndividual4 = outFolder + "sample_slab_out" + ".struxml";
                     modelGlulam.SerializeModel(outPathIndividual4);
 
-                    Calculate.Analysis analysis = new Calculate.Analysis(null, null, null, null, false, false, false, false, false, false, false, false, true, false, false, false, false);
+                    Calculate.Analysis analysis = new Calculate.Analysis(null, null, null, null, true, false, false, true, false, false, false, false, true, false, false, false, false);
                     Calculate.Design design = new Calculate.Design(autoDesign: true, check: true, applyChanges: true);
                     Calculate.FdScript fdScript = Calculate.FdScript.Design("timber", outPathIndividual4, analysis, design, bscPaths, "", true);
                     Calculate.Application app = new Calculate.Application();
