@@ -34,10 +34,10 @@ namespace FemDesign.Examples
 
             string bscPath = @"C:\Users\camil\OneDrive\OneDrive_Privat\OneDrive\Bygningsdesign kandidat\Speciale\femdesign-api\quantities_test.bsc";
 
-            Model modelConcrete = Model.DeserializeFromFilePath(@"C:\Users\camil\OneDrive\OneDrive_Privat\OneDrive\Bygningsdesign kandidat\Speciale\femdesign-api\Optimisation\Single_column\single_column_concrete_C20.struxml");
-            Model modelSteel = Model.DeserializeFromFilePath(@"C:\Users\camil\OneDrive\OneDrive_Privat\OneDrive\Bygningsdesign kandidat\Speciale\femdesign-api\Optimisation\Single_column\single_column_steel.struxml");
-            Model modelTimber = Model.DeserializeFromFilePath(@"C:\Users\camil\OneDrive\OneDrive_Privat\OneDrive\Bygningsdesign kandidat\Speciale\femdesign-api\Optimisation\Single_column\single_column_timber.struxml");
-            Model modelGlulam = Model.DeserializeFromFilePath(@"C:\Users\camil\OneDrive\OneDrive_Privat\OneDrive\Bygningsdesign kandidat\Speciale\femdesign-api\Optimisation\Single_column\single_column_glulam.struxml");
+            Model modelConcrete = Model.DeserializeFromFilePath("single_column_concrete_C20.struxml");
+            Model modelSteel = Model.DeserializeFromFilePath("single_column_steel.struxml");
+            Model modelTimber = Model.DeserializeFromFilePath("single_column_timber.struxml");
+            Model modelGlulam = Model.DeserializeFromFilePath("single_column_glulam.struxml");
 
 
             var resultTypes = new List<Type>
@@ -68,9 +68,9 @@ namespace FemDesign.Examples
             //materialCarbon.Add("C30/37", 293.69);
             //materialCarbon.Add("C35/45", 311.47);
             //materialCarbon.Add("C40/50", 440.77);
-            materialCarbon.Add("S 355", steelCarbon);
-            materialCarbon.Add("C20", constructionWoodCarbon);
-            materialCarbon.Add("GL 24c", glulamCarbon);
+            materialCarbon.Add("steel", steelCarbon);
+            materialCarbon.Add("timber", constructionWoodCarbon);
+            materialCarbon.Add("glulam", glulamCarbon);
 
 
 
@@ -129,7 +129,7 @@ namespace FemDesign.Examples
 
             foreach (KeyValuePair<string, double> entry in materialCarbon)
             {
-
+                string material = "";
                 string materialInput = entry.Key;
 
                 if (materialInput == "C20/25")
@@ -161,8 +161,9 @@ namespace FemDesign.Examples
 
                     chosenSection = ChosenSection(@"C:\Users\camil\OneDrive\OneDrive_Privat\OneDrive\Bygningsdesign kandidat\Speciale\femdesign-api\Optimisation\Outputssample_slab_out\results\QuantityEstimationConcrete.csv");
                     utilisation = Utilisation(@"C:\Users\camil\OneDrive\OneDrive_Privat\OneDrive\Bygningsdesign kandidat\Speciale\femdesign-api\Optimisation\Outputssample_slab_out\results\Column_C20_utilisation.csv");
+                    material = materialInput;
                 }
-                else if (materialInput == "S 355")
+                else if (materialInput == "steel")
                 {
                     string outPathIndividual2 = outFolder + "sample_slab_out" + ".struxml";
                     modelSteel.SerializeModel(outPathIndividual2);
@@ -178,8 +179,9 @@ namespace FemDesign.Examples
 
                     chosenSection = ChosenSection(@"C:\Users\camil\OneDrive\OneDrive_Privat\OneDrive\Bygningsdesign kandidat\Speciale\femdesign-api\Optimisation\Outputssample_slab_out\results\QuantityEstimationSteel.csv");
                     utilisation = Utilisation(@"C:\Users\camil\OneDrive\OneDrive_Privat\OneDrive\Bygningsdesign kandidat\Speciale\femdesign-api\Optimisation\Outputssample_slab_out\results\Column_steel_utilisation.csv");
+                    material = modelSteel.Materials.Material[0].ToString();
                 }
-                else if (materialInput == "C20")
+                else if (materialInput == "timber")
                 {
                     string outPathIndividual3 = outFolder + "sample_slab_out" + ".struxml";
                     modelTimber.SerializeModel(outPathIndividual3);
@@ -195,8 +197,9 @@ namespace FemDesign.Examples
 
                     chosenSection = ChosenSection(@"C:\Users\camil\OneDrive\OneDrive_Privat\OneDrive\Bygningsdesign kandidat\Speciale\femdesign-api\Optimisation\Outputssample_slab_out\results\QuantityEstimationTimber.csv");
                     utilisation = Utilisation(@"C:\Users\camil\OneDrive\OneDrive_Privat\OneDrive\Bygningsdesign kandidat\Speciale\femdesign-api\Optimisation\Outputssample_slab_out\results\Column_timber_utilisation.csv");
+                    material = modelTimber.Materials.Material[0].ToString();
                 }
-                else if (materialInput == "GL 24c")
+                else if (materialInput == "glulam")
                 {
                     string outPathIndividual4 = outFolder + "sample_slab_out" + ".struxml";
                     modelGlulam.SerializeModel(outPathIndividual4);
@@ -212,6 +215,7 @@ namespace FemDesign.Examples
 
                     chosenSection = ChosenSection(@"C:\Users\camil\OneDrive\OneDrive_Privat\OneDrive\Bygningsdesign kandidat\Speciale\femdesign-api\Optimisation\Outputssample_slab_out\results\QuantityEstimationTimber.csv");
                     utilisation = Utilisation(@"C:\Users\camil\OneDrive\OneDrive_Privat\OneDrive\Bygningsdesign kandidat\Speciale\femdesign-api\Optimisation\Outputssample_slab_out\results\Column_glulam_utilisation.csv");
+                    material = modelGlulam.Materials.Material[0].ToString();
                 }
 
                 
@@ -230,15 +234,15 @@ namespace FemDesign.Examples
                 {
                     totalGWP = Carbon * concreteVolume + reinforcementCarbon * reinforcementWeight;
                 }
-                else if (materialInput == "S 355")
+                else if (materialInput == "steel")
                 {
                     totalGWP = Carbon * steelWeight;
                 }
-                else if (materialInput == "C20")
+                else if (materialInput == "timber")
                 {
                     totalGWP = Carbon * timberVolume;
                 }
-                else if (materialInput == "GL 24c")
+                else if (materialInput == "glulam")
                 {
                     totalGWP = Carbon * timberVolume;
                 }
@@ -246,7 +250,7 @@ namespace FemDesign.Examples
 
 
 
-                Console.WriteLine(string.Format("{0} {1} {2} {3} {4} ", "GWP: ", totalGWP, materialInput, chosenSection, utilisation));
+                Console.WriteLine(string.Format("{0} {1} {2} {3} {4} ", "GWP: ", totalGWP, material, chosenSection, utilisation));
                 GWP.Add(totalGWP);
 
             }
