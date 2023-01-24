@@ -12,6 +12,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Update="materials_glulam.struxml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="materials.struxml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

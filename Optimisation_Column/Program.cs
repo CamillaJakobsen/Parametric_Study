@@ -21,10 +21,7 @@ namespace FemDesign.Examples
 
         public static void Main(string[] args)
         {
-            //string path = @"C:\Users\camil\OneDrive\OneDrive_Privat\OneDrive\Bygningsdesign kandidat\Speciale\femdesign-api\Optimisation\sample_optimisation_slab.struxml";
-            //string path = @"C:\Users\camil\OneDrive\OneDrive_Privat\OneDrive\Bygningsdesign kandidat\Speciale\femdesign-api\Optimisation\optimisation_single_column.struxml";
-
-            //string bscPathQEconcrete = @"C:\Users\camil\OneDrive\OneDrive_Privat\OneDrive\Bygningsdesign kandidat\Speciale\femdesign-api\Optimisation\QEconcrete.bsc";
+            //bscpaths";
             string bscPathConcreteColumnUtilisation = @"C:\Users\camil\OneDrive\OneDrive_Privat\OneDrive\Bygningsdesign kandidat\Speciale\femdesign-api\Optimisation\Single_column\Column_C20_utilisation.bsc";
             string bscPathSteelColumnUtilisation = @"C:\Users\camil\OneDrive\OneDrive_Privat\OneDrive\Bygningsdesign kandidat\Speciale\femdesign-api\Optimisation\Single_column\Column_steel_utilisation.bsc";
             string bscPathTimberColumnUtilisation = @"C:\Users\camil\OneDrive\OneDrive_Privat\OneDrive\Bygningsdesign kandidat\Speciale\femdesign-api\Optimisation\Single_column\Column_timber_utilisation.bsc";
@@ -32,14 +29,21 @@ namespace FemDesign.Examples
             string outFolder = @"C:\Users\camil\OneDrive\OneDrive_Privat\OneDrive\Bygningsdesign kandidat\Speciale\femdesign-api\Optimisation\Outputs";
             string tempPath = outFolder + "temp.struxml";
 
+            // bsc paths
             string bscPath = @"C:\Users\camil\OneDrive\OneDrive_Privat\OneDrive\Bygningsdesign kandidat\Speciale\femdesign-api\quantities_test.bsc";
+            // Modelpaths
+            string pathConcrete = @"C:\Users\camil\OneDrive\OneDrive_Privat\OneDrive\femdesign-api-master\Optimisation_Column\single_column_concrete_C20.struxml";
+            string pathSteel = @"C:\Users\camil\OneDrive\OneDrive_Privat\OneDrive\femdesign-api-master\Optimisation_Column\single_column_steel.struxml";
+            string pathTimber = @"C:\Users\camil\OneDrive\OneDrive_Privat\OneDrive\femdesign-api-master\Optimisation_Column\single_column_timber.struxml";
+            string pathGlulam = @"C:\Users\camil\OneDrive\OneDrive_Privat\OneDrive\femdesign-api-master\Optimisation_Column\single_column_glulam.struxml";
 
-            Model modelConcrete = Model.DeserializeFromFilePath("single_column_concrete_C20.struxml");
-            Model modelSteel = Model.DeserializeFromFilePath("single_column_steel.struxml");
-            Model modelTimber = Model.DeserializeFromFilePath("single_column_timber.struxml");
-            Model modelGlulam = Model.DeserializeFromFilePath("single_column_glulam.struxml");
+            //deserialize models
+            Model modelConcrete = Model.DeserializeFromFilePath(pathConcrete);
+            Model modelSteel = Model.DeserializeFromFilePath(pathSteel);
+            Model modelTimber = Model.DeserializeFromFilePath(pathTimber);
+            Model modelGlulam = Model.DeserializeFromFilePath(pathGlulam);
 
-
+            // bsc path types
             var resultTypes = new List<Type>
             {
                 typeof(QuantityEstimationConcrete),
@@ -55,13 +59,16 @@ namespace FemDesign.Examples
             bscPaths.Add(bscPathTimberColumnUtilisation);
             bscPaths.Add(bscPathGlulamColumnUtilisation);
             
-            //CO2 udledning pr kg armeringsstål
+            //CO2 emissions per kg reinforcement steel
             double reinforcementCarbon = 0.6841;
+            //CO2 emissions per kg steel
             double steelCarbon = 1.125 + 0.00184;
+            //CO2 emissions per m3 timber
             double constructionWoodCarbon = (-680) + 728;
+            //CO2 emissions per m3 glulam
             double glulamCarbon = (-610) + 743;
 
-            // CO2 udledning pr m3 beton med en massefylde på 2246 kg/m3
+            // CO2 emissions per m3 concrete with a density of 2246 kg/m3 and create dictionary with the various GWP values
             Dictionary<string, double> materialCarbon = new Dictionary<string, double>();
             materialCarbon.Add("C20/25", 227.07);
             materialCarbon.Add("steel", steelCarbon);
@@ -74,9 +81,9 @@ namespace FemDesign.Examples
             double reinforcementWeight = 0;
             double steelWeight = 0;
             double timberVolume = 0;
-            double utilisation = 0;
             string chosenSection = "";
 
+            //Loop over the various GWP values
             foreach (KeyValuePair<string, double> entry in materialCarbon)
             {
                 string material = "";
@@ -87,21 +94,19 @@ namespace FemDesign.Examples
                     string outPathIndividual = outFolder + "sample_slab_out" + ".struxml";
                     modelConcrete.SerializeModel(outPathIndividual);
                     
-
+                    // Run the analysis
                     Calculate.Analysis analysis = new Calculate.Analysis(null, null, null, null, false, false, false, false, false, false, false, false, true, false, false, false, false);
                     Calculate.Design design = new Calculate.Design(autoDesign: true, check: true, applyChanges: true);
                     Calculate.FdScript fdScript = Calculate.FdScript.Design("rc", outPathIndividual, analysis, design, bscPaths, "", true);
                     Calculate.Application app = new Calculate.Application();
                     app.RunFdScript(fdScript, false, true, true);
 
-
+                    //Calculate quantity
                     concreteVolume = ConcreteVolume();
                     reinforcementWeight = ReinforcementWeight();
 
-                    //RunAnalysis(outPathIndividual, bscPathUtilisation);
-
+                    //Assign the most optimal section
                     chosenSection = ChosenSection(@"C:\Users\camil\OneDrive\OneDrive_Privat\OneDrive\Bygningsdesign kandidat\Speciale\femdesign-api\Optimisation\Outputssample_slab_out\results\QuantityEstimationConcrete.csv");
-                    utilisation = Utilisation(@"C:\Users\camil\OneDrive\OneDrive_Privat\OneDrive\Bygningsdesign kandidat\Speciale\femdesign-api\Optimisation\Outputssample_slab_out\results\Column_C20_utilisation.csv");
                     material = materialInput;
                 }
                 else if (materialInput == "steel")
@@ -109,17 +114,18 @@ namespace FemDesign.Examples
                     string outPathIndividual2 = outFolder + "sample_slab_out" + ".struxml";
                     modelSteel.SerializeModel(outPathIndividual2);
 
+                    // Run the analysis
                     Calculate.Analysis analysis = new Calculate.Analysis(null, null, null, null, false, false, false, true, false, false, false, false, true, false, false, false, false);
                     Calculate.Design design = new Calculate.Design(autoDesign: true, check: true, applyChanges: true);
                     Calculate.FdScript fdScript = Calculate.FdScript.Design("steel", outPathIndividual2, analysis, design, bscPaths, "", true);
                     Calculate.Application app = new Calculate.Application();
                     app.RunFdScript(fdScript, false, true, true);
 
-                   
+                    //Calculate quantity
                     steelWeight = SteelWeight();
 
+                    //Assign the most optimal section
                     chosenSection = ChosenSection(@"C:\Users\camil\OneDrive\OneDrive_Privat\OneDrive\Bygningsdesign kandidat\Speciale\femdesign-api\Optimisation\Outputssample_slab_out\results\QuantityEstimationSteel.csv");
-                    utilisation = Utilisation(@"C:\Users\camil\OneDrive\OneDrive_Privat\OneDrive\Bygningsdesign kandidat\Speciale\femdesign-api\Optimisation\Outputssample_slab_out\results\Column_steel_utilisation.csv");
                     material = modelSteel.Materials.Material[0].ToString();
                 }
                 else if (materialInput == "timber")
@@ -127,17 +133,18 @@ namespace FemDesign.Examples
                     string outPathIndividual3 = outFolder + "sample_slab_out" + ".struxml";
                     modelTimber.SerializeModel(outPathIndividual3);
 
+                    // Run the analysis
                     Calculate.Analysis analysis = new Calculate.Analysis(null, null, null, null, false, false, false, true, false, false, false, false, true, false, false, false, false);
                     Calculate.Design design = new Calculate.Design(autoDesign: true, check: true, applyChanges: true);
                     Calculate.FdScript fdScript = Calculate.FdScript.Design("timber", outPathIndividual3, analysis, design, bscPaths, "", true);
                     Calculate.Application app = new Calculate.Application();
                     app.RunFdScript(fdScript, false, true, true);
 
-
+                    //Calculate quantity
                     timberVolume = TimberVolume();
 
+                    //Assign the most optimal section
                     chosenSection = ChosenSection(@"C:\Users\camil\OneDrive\OneDrive_Privat\OneDrive\Bygningsdesign kandidat\Speciale\femdesign-api\Optimisation\Outputssample_slab_out\results\QuantityEstimationTimber.csv");
-                    utilisation = Utilisation(@"C:\Users\camil\OneDrive\OneDrive_Privat\OneDrive\Bygningsdesign kandidat\Speciale\femdesign-api\Optimisation\Outputssample_slab_out\results\Column_timber_utilisation.csv");
                     material = modelTimber.Materials.Material[0].ToString();
                 }
                 else if (materialInput == "glulam")
@@ -145,17 +152,18 @@ namespace FemDesign.Examples
                     string outPathIndividual4 = outFolder + "sample_slab_out" + ".struxml";
                     modelGlulam.SerializeModel(outPathIndividual4);
 
+                    // Run the analysis
                     Calculate.Analysis analysis = new Calculate.Analysis(null, null, null, null, true, false, false, true, false, false, false, false, true, false, false, false, false);
                     Calculate.Design design = new Calculate.Design(autoDesign: true, check: true, applyChanges: true);
                     Calculate.FdScript fdScript = Calculate.FdScript.Design("timber", outPathIndividual4, analysis, design, bscPaths, "", true);
                     Calculate.Application app = new Calculate.Application();
                     app.RunFdScript(fdScript, false, true, true);
 
-
+                    //Calculate quantity
                     timberVolume = TimberVolume();
 
+                    //Assign the most optimal section
                     chosenSection = ChosenSection(@"C:\Users\camil\OneDrive\OneDrive_Privat\OneDrive\Bygningsdesign kandidat\Speciale\femdesign-api\Optimisation\Outputssample_slab_out\results\QuantityEstimationTimber.csv");
-                    utilisation = Utilisation(@"C:\Users\camil\OneDrive\OneDrive_Privat\OneDrive\Bygningsdesign kandidat\Speciale\femdesign-api\Optimisation\Outputssample_slab_out\results\Column_glulam_utilisation.csv");
                     material = modelGlulam.Materials.Material[0].ToString();
                 }
 
@@ -181,19 +189,9 @@ namespace FemDesign.Examples
                     totalGWP = Carbon * timberVolume;
                 }
 
-                Console.WriteLine(string.Format("{0} {1} {2} {3} {4} ", "GWP: ", totalGWP, material, chosenSection, utilisation));
+                Console.WriteLine(string.Format("{0} {1} {2} {3} ", "GWP: ", totalGWP, material, chosenSection));
 
             }
-
-        }
-
-        public static void RunAnalysis(string modelPath, List<string> bscFilePaths)
-        {
-            Calculate.Analysis analysis = new Calculate.Analysis(null, null, null, null, false, false, false, false, false, false, false, false, true, false, false, false, false);
-            Calculate.Design design = new Calculate.Design(autoDesign: true, check: true, applyChanges: true);
-            Calculate.FdScript fdScript = Calculate.FdScript.Design("rc", modelPath, analysis, design, bscFilePaths, "", true);
-            Calculate.Application app = new Calculate.Application();
-            app.RunFdScript(fdScript, false, true, true);
 
         }
 
