@@ -13,7 +13,7 @@ using System.Xml.Linq;
 
 namespace FemDesign.Examples
 {
-    public class Optimisation_Deck
+    public class Optimisation
     {
 
         public static void Main(string[] args)

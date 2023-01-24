@@ -8,7 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="C:\Users\camil\OneDrive\OneDrive_Privat\OneDrive\femdesign-api-master\Optimisation_Deck\Output.cs" Link="Output.cs" />
+    <Compile Remove="Output.cs" />
   </ItemGroup>
 
   <ItemGroup>
