@@ -82,6 +82,8 @@ namespace FemDesign.Examples
             double steelWeight = 0;
             double timberVolume = 0;
             string chosenSection = "";
+            StringBuilder csvContent = new StringBuilder();
+            csvContent.AppendLine("TotalGWP, Material, CrossSection");
 
             //Loop over the various GWP values
             foreach (KeyValuePair<string, double> entry in materialCarbon)
@@ -190,7 +192,10 @@ namespace FemDesign.Examples
                 }
 
                 Console.WriteLine(string.Format("{0} {1} {2} {3} ", "GWP: ", totalGWP, material, chosenSection));
-
+                //Output file to csv file
+                csvContent.AppendLine(string.Format("{0} {1} {2} {3}", totalGWP, material, chosenSection));
+                string csvpath = "C:\\Users\\camil\\OneDrive\\OneDrive_Privat\\OneDrive\\femdesign-api-master\\Optimisation\\csvOutput.txt";
+                File.AppendAllText(csvpath, csvContent.ToString());
             }
 
         }
