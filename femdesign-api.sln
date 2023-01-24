@@ -53,9 +53,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Example 7 - Creating a wall
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Practical example - ResultsToJSON", "FemDesign.Examples\C#\Practical example - ResultsToJSON\Practical example - ResultsToJSON.csproj", "{2747D6C1-1E22-4262-A938-44FEE99A022C}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Optimisation", "Optimisation\Optimisation.csproj", "{6381C005-5CFB-42EE-9369-6F075F169285}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Optimisation_Deck", "Optimisation\Optimisation_Deck.csproj", "{6381C005-5CFB-42EE-9369-6F075F169285}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Optimisation_Column", "Optimisation_Column\Optimisation_Column.csproj", "{378544DA-FBED-4104-ADAD-FD56E303F5D9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Optimisation_Column", "Optimisation_Column\Optimisation_Column.csproj", "{378544DA-FBED-4104-ADAD-FD56E303F5D9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

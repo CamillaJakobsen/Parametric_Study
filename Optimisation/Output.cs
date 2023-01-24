@@ -9,6 +9,7 @@ using System.Globalization;
 using Optimisation;
 using System.ComponentModel;
 using FemDesign.Results;
+using System.Xml.Linq;
 
 namespace FemDesign.Examples
 {
@@ -63,14 +64,10 @@ namespace FemDesign.Examples
             double low = 0.18;
             double high = 0.31;
 
-            //Loop lists for variables for concrete strength
-            List<double> concreteVolumeList = new List<double>();
-            List<double> reinforcementWeightList = new List<double>();
-            List<double> utilisationList = new List<double>();
-            List<double> GWP = new List<double>();
-
             //Write the first line of the outputs
             Console.WriteLine(string.Format("{0} {1} {2} {3} {4} {5} {6} {7}", "TotalGWP", "Thickness", "MaterialInput", "Utilisation", "UtilisationSC", "ReinforcementRatio", "ConcreteGWP", "ReinforcementGWP"));
+            StringBuilder sb = new StringBuilder();
+            sb.AppendLine("TotalGWP" + "Thickness" + "MaterialInput" + "Utilisation" + "UtilisationSC" + "ReinforcementRatio" + "ConcreteGWP" + "ReinforcementGWP" + Environment.NewLine);
 
             //Loop over the different concrete strengths
             foreach (KeyValuePair<string, double> entry in concreteStrength)
@@ -116,17 +113,16 @@ namespace FemDesign.Examples
                     double reinforcementGWP = reinforcementCarbon * reinforcementWeight;
                     double totalGWP = concreteCarbon * concreteVolume + reinforcementCarbon * reinforcementWeight;
                     Console.WriteLine(string.Format("{0} {1} {2} {3} {4} {5} {6} {7}", totalGWP, thickness, materialInput, utilisation, utilisationSC, reinforcementRatio, concreteGWP, reinforcementGWP));
-                    GWP.Add(totalGWP);
+                    //Output file to csv file
+                    sb.AppendLine(totalGWP + thickness + materialInput + utilisation + utilisationSC + reinforcementRatio + concreteGWP + reinforcementGWP + Environment.NewLine);
 
                 }
 
             }
             //Output file to csv file
-            FileStream filestream = new FileStream("out.txt", FileMode.Create);
-            var streamwriter = new StreamWriter(filestream);
-            streamwriter.AutoFlush = true;
-            Console.SetOut(streamwriter);
-            //Console.SetError(streamwriter);
+            
+
+
         }
     
         //Set-up for running the analysis
